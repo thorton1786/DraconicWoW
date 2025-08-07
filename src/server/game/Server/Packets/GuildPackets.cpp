@@ -108,7 +108,7 @@ namespace WorldPackets::Guild
 
     WorldPacket const* GuildRoster::Write()
     {
-        _worldPacket << int32(NumAccounts);
+		_worldPacket << int32(NumAccounts);
         _worldPacket << CreateDate;
         _worldPacket << int32(GuildFlags);
         _worldPacket << Size<uint32>(MemberData);
@@ -517,12 +517,11 @@ namespace WorldPackets::Guild
 
     WorldPacket const* GuildPartyState::Write()
     {
-        _worldPacket << Bits<1>(InGuildParty);
-        _worldPacket.FlushBits();
-
         _worldPacket << int32(NumMembers);
         _worldPacket << int32(NumRequired);
         _worldPacket << float(GuildXPEarnedMult);
+        _worldPacket << Bits<1>(InGuildParty);
+        _worldPacket.FlushBits();
 
         return &_worldPacket;
     }

@@ -580,9 +580,14 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPackets::AreaTrigger::AreaTrigge
     {
         // set resting flag we are in the inn
         if (packet.Entered)
-            player->GetRestMgr().SetInnTriggerID(atEntry->ID);
+        {
+            player->GetRestMgr().SetInnTrigger(InnAreaTrigger{ .IsDBC = true, .AreaTriggerEntryId = atEntry->ID });
+        }
         else
+        {
             player->GetRestMgr().RemoveRestFlag(REST_FLAG_IN_TAVERN);
+            player->GetRestMgr().SetInnTrigger(std::nullopt);
+        }
 
         if (sWorld->IsFFAPvPRealm())
         {
@@ -711,6 +716,13 @@ void WorldSession::HandleUpdateAccountData(WorldPackets::ClientConfig::UserClien
     if (packet.Size == 0)                               // erase
     {
         SetAccountData(AccountDataType(packet.DataType), 0, "");
+
+        WorldPackets::ClientConfig::UpdateAccountDataComplete updateAccountDataComplete;
+        updateAccountDataComplete.Player = packet.PlayerGuid;
+        updateAccountDataComplete.DataType = packet.DataType;
+        updateAccountDataComplete.Result = 0;
+        SendPacket(updateAccountDataComplete.Write());
+
         return;
     }
 
@@ -731,6 +743,12 @@ void WorldSession::HandleUpdateAccountData(WorldPackets::ClientConfig::UserClien
     }
 
     SetAccountData(AccountDataType(packet.DataType), packet.Time, dest);
+
+    WorldPackets::ClientConfig::UpdateAccountDataComplete updateAccountDataComplete;
+    updateAccountDataComplete.Player = packet.PlayerGuid;
+    updateAccountDataComplete.DataType = packet.DataType;
+    updateAccountDataComplete.Result = 0;
+    SendPacket(updateAccountDataComplete.Write());
 }
 
 void WorldSession::HandleRequestAccountData(WorldPackets::ClientConfig::RequestAccountData& request)

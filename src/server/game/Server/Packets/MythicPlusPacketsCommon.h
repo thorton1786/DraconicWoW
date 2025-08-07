@@ -65,7 +65,7 @@ namespace WorldPackets
             int32 DurationMs = 0;
             Timestamp<> StartDate;
             Timestamp<> CompletionDate;
-            int32 Season = 0;
+            int32 Season = 24;
             std::vector<MythicPlusMember> Members;
             float RunScore = 0.0f;
             std::array<int32, 4> KeystoneAffixIDs;
@@ -87,7 +87,7 @@ namespace WorldPackets
 
         struct DungeonScoreSeasonData
         {
-            int32 Season = 0;
+            int32 Season = 24;
             std::vector<DungeonScoreMapData> SeasonMaps;
             std::vector<DungeonScoreMapData> LadderMaps;
             float SeasonScore = 0.0f;

@@ -339,16 +339,16 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            bool RatedBattlegrounds = false;
-            bool PugBattlegrounds = false;
-            bool WargameBattlegrounds = false;
-            bool WargameArenas = false;
-            bool RatedArenas = false;
-            bool ArenaSkirmish = false;
-            bool SoloShuffle = false;
-            bool RatedSoloShuffle = false;
-            bool BattlegroundBlitz = false;
-            bool RatedBattlegroundBlitz = false; // solo rbg
+            bool RatedBattlegrounds = true;
+            bool PugBattlegrounds = true;
+            bool WargameBattlegrounds = true;
+            bool WargameArenas = true;
+            bool RatedArenas = true;
+            bool ArenaSkirmish = true;
+            bool SoloShuffle = true;
+            bool RatedSoloShuffle = true;
+            bool BattlegroundBlitz = true;
+            bool RatedBattlegroundBlitz = true; // solo rbg
         };
 
         class RequestBattlefieldStatus final : public ClientPacket
@@ -541,7 +541,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint8 Winner = 0;
+            int32 Winner = 0;
             WorldPackets::Duration<Seconds> Duration;
             Optional<PVPMatchStatistics> LogData;
             uint32 SoloShuffleStatus = 0;
@@ -595,7 +595,7 @@ namespace WorldPackets
 
             ObjectGuid OpposingPartyMember;
             int64 QueueID = 0;
-            bool Accept = false;
+            bool Accept = true;
         };
 
         class BattlemasterJoinBrawl final : public ClientPacket
@@ -621,14 +621,14 @@ namespace WorldPackets
         {
             int32 PvpBrawlID = 0;
             int32 AchievementId = 0;
-            bool CanQueue = false;
+            bool CanQueue = true;
         };
 
         struct BrawlInfo
         {
             int32 PvpBrawlID = 0;
             int32 TimeToBrawl = 0;
-            bool IsActive = false;
+            bool IsActive = true;
         };
 
         class RequestScheduledPVPInfoResponse final : public ServerPacket
@@ -638,8 +638,8 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            bool HasBrawlInfo = false;
-            bool HasSpecialEventInfo = false;
+            bool HasBrawlInfo = true;
+            bool HasSpecialEventInfo = true;
 
             Optional<BrawlInfo> Brawl;
             Optional<SpecialEventInfo> SpecialEvent;

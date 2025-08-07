@@ -444,6 +444,10 @@ class TC_GAME_API Spell
         void EffectTeleportGraveyard();
         void EffectUpdateInteractions();
         void EffectLearnWarbandScene();
+        void EffectSetPlayerDataElementAccount();
+        void EffectSetPlayerDataElementCharacter();
+        void EffectSetPlayerDataFlagAccount();
+        void EffectSetPlayerDataFlagCharacter();
 
         //NEW
         void EffectApplyAreaAura();

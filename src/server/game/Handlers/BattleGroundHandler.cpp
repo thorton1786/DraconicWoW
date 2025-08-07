@@ -224,12 +224,9 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPackets::Battleground::Batt
             avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         }
 
-        for (GroupReference const* itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+        for (GroupReference const& itr : grp->GetMembers())
         {
-            Player* member = itr->GetSource();
-            if (!member)
-                continue;   // this should never happen
-
+            Player* member = itr.GetSource();
             if (err)
             {
                 WorldPackets::Battleground::BattlefieldStatusFailed battlefieldStatus;
@@ -428,9 +425,9 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPackets::Battleground::Battl
             if (grp->GetLeaderGUID() != _player->GetGUID())
                 return;
 
-            for (auto itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+            for (auto const& itr : grp->GetMembers())
             {
-                auto member = itr->GetSource();
+                auto member = itr.GetSource();
                 if (!member)
                     continue;
 
@@ -620,12 +617,9 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPackets::Battleground::Battl
         avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
     }
 
-    for (GroupReference* itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+    for (GroupReference const& itr : grp->GetMembers())
     {
-        Player* member = itr->GetSource();
-        if (!member)
-            continue;
-
+        Player* member = itr.GetSource();
         if (err)
         {
             WorldPackets::Battleground::BattlefieldStatusFailed battlefieldStatus;
@@ -753,9 +747,9 @@ void WorldSession::HandleJoinSkirmish(WorldPackets::Battleground::JoinSkirmish& 
             avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         }
 
-        for (GroupReference* itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+        for (GroupReference const& itr : grp->GetMembers())
         {
-            Player* member = itr->GetSource();
+            Player* member = itr.GetSource();
             if (!member)
                 continue;
 
@@ -949,9 +943,9 @@ void WorldSession::JoinBracket(uint8 slot, uint8 /*rolesMask*/ /*= ROLES_DEFAULT
         return;
     }
 
-    for (GroupReference* itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+    for (GroupReference const& itr : grp->GetMembers())
     {
-        Player* member = itr->GetSource();
+        Player* member = itr.GetSource();
         if (!member)
             continue;
 

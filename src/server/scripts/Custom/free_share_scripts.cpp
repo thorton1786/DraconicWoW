@@ -246,9 +246,9 @@ public:
         if (!handler->GetSession()->GetPlayer()->GetGroup())
             return false;
 
-        for (GroupReference* itr = handler->GetSession()->GetPlayer()->GetGroup()->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReference const& itr : handler->GetSession()->GetPlayer()->GetGroup()->GetMembers())
         {
-            Player* plr = itr->GetSource();
+            Player* plr = itr.GetSource();
             if (!plr || !plr->GetSession())
                 continue;
 
@@ -277,9 +277,9 @@ public:
         if (!handler->GetSession()->GetPlayer()->GetGroup())
             return false;
 
-        for (GroupReference* itr = handler->GetSession()->GetPlayer()->GetGroup()->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReference const& itr : handler->GetSession()->GetPlayer()->GetGroup()->GetMembers())
         {
-            Player* plr = itr->GetSource();
+            Player* plr = itr.GetSource();
             if (!plr || !plr->GetSession())
                 continue;
 

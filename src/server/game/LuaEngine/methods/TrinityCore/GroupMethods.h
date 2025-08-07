@@ -183,9 +183,9 @@ namespace LuaGroup
         int tbl = lua_gettop(E->L);
         uint32 i = 0;
 
-        for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
+        for (GroupReference const& itr : group->GetMembers())
         {
-            Player* member = itr->GetSource();
+            Player* member = itr.GetSource();
             if (!member || !member->GetSession())
                 continue;
 

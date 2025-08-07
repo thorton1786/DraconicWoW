@@ -729,9 +729,9 @@ void WorldSession::HandleSendPingUnit(WorldPackets::Party::SendPingUnit const& p
     broadcastPingUnit.SpellOverrideNameID = pingUnit.SpellOverrideNameID;
     broadcastPingUnit.Write();
 
-    for (GroupReference const* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+    for (GroupReference const& itr : group->GetMembers())
     {
-        Player const* member = itr->GetSource();
+        Player const* member = itr.GetSource();
         if (_player == member || !_player->IsInMap(member))
             continue;
 
@@ -758,9 +758,9 @@ void WorldSession::HandleSendPingWorldPoint(WorldPackets::Party::SendPingWorldPo
     broadcastPingWorldPoint.PingDuration = pingWorldPoint.PingDuration;
     broadcastPingWorldPoint.Write();
 
-    for (GroupReference const* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+    for (GroupReference const& itr : group->GetMembers())
     {
-        Player const* member = itr->GetSource();
+        Player const* member = itr.GetSource();
         if (_player == member || !_player->IsInMap(member))
             continue;
 

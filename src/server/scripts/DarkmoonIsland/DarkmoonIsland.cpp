@@ -307,64 +307,6 @@ public:
     }
 };
 
- // Whee! - 46668
-class spell_darkmoon_carousel_whee : public SpellScriptLoader
-{
-public:
-    spell_darkmoon_carousel_whee() : SpellScriptLoader("spell_darkmoon_carousel_whee") { }
-
-    class spell_darkmoon_carousel_whee_AuraScript : public AuraScript
-    {
-
-        uint32 update;
-
-        bool Validate(SpellInfo const* /*spell*/) override
-        {
-            update = 0;
-            return true;
-        }
-
-        void OnUpdate(uint32 diff)
-        {
-            update += diff;
-
-            if (update >= 5000)
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Transport* transport = dynamic_cast<Transport*>(_player->GetTransport()))
-                    {
-                        if (transport->GetEntry() == GOB_DARKMOON_CAROUSEL)
-                        {
-                            if (Aura* aura = GetAura())
-                            {
-                                uint32 currentMaxDuration = aura->GetMaxDuration();
-                                uint32 newMaxDurantion = currentMaxDuration + (5 * MINUTE * IN_MILLISECONDS);
-                                newMaxDurantion = newMaxDurantion <= (60 * MINUTE * IN_MILLISECONDS) ? newMaxDurantion : (60 * MINUTE * IN_MILLISECONDS);
-
-                                aura->SetMaxDuration(newMaxDurantion);
-                                aura->SetDuration(newMaxDurantion);
-                            }
-                        }
-                    }
-                }
-
-                update = 0;
-            }
-        }
-
-        void Register() override
-        {
-            OnAuraUpdate += AuraUpdateFn(spell_darkmoon_carousel_whee_AuraScript::OnUpdate);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_darkmoon_carousel_whee_AuraScript();
-    }
-};
-
 // To the Staging Area! - 101260
 class spell_darkmoon_staging_area_teleport : public SpellScriptLoader
 {
@@ -718,7 +660,6 @@ void AddSC_darkmoon_island()
     new npc_fire_juggler_darkmoon();
     new boss_darkmoon_moonfang_mother();
 
-    new spell_darkmoon_carousel_whee();
     new spell_darkmoon_staging_area_teleport();
 
     new item_darkmoon_faire_fireworks();   

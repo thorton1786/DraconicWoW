@@ -972,7 +972,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
 void Eluna::UpdateEluna(uint32 diff)
 {
     if (reload)
-        if(!GetQueryProcessor().HasPendingCallbacks())
+        if(!GetQueryProcessor().Empty())
             _ReloadEluna();
 
     eventMgr->globalProcessor->Update(diff);

@@ -29,8 +29,8 @@
 #include "CombatPackets.h"
 #include "Common.h"
 #include "Conversation.h"
-#include "Crafting.h"
 #include "Creature.h"
+#include "Crafting.h"
 #include "CreatureAI.h"
 #include "CreatureTextMgr.h"
 #include "DatabaseEnv.h"
@@ -428,10 +428,10 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //332 SPELL_EFFECT_332
     &Spell::EffectNULL,                                     //333 SPELL_EFFECT_333
     &Spell::EffectNULL,                                     //334 SPELL_EFFECT_334
-    &Spell::EffectNULL,                                     //335 SPELL_EFFECT_335
-    &Spell::EffectNULL,                                     //336 SPELL_EFFECT_336
-    &Spell::EffectNULL,                                     //337 SPELL_EFFECT_337
-    &Spell::EffectNULL,                                     //338 SPELL_EFFECT_338
+    &Spell::EffectSetPlayerDataElementAccount,              //335 SPELL_EFFECT_SET_PLAYER_DATA_ELEMENT_ACCOUNT
+    &Spell::EffectSetPlayerDataElementCharacter,            //336 SPELL_EFFECT_SET_PLAYER_DATA_ELEMENT_CHARACTER
+    &Spell::EffectSetPlayerDataFlagAccount,                 //337 SPELL_EFFECT_SET_PLAYER_DATA_FLAG_ACCOUNT
+    &Spell::EffectSetPlayerDataFlagCharacter,               //338 SPELL_EFFECT_SET_PLAYER_DATA_FLAG_CHARACTER
     &Spell::EffectNULL,                                     //339 SPELL_EFFECT_UI_ACTION
     &Spell::EffectNULL,                                     //340 SPELL_EFFECT_340
     &Spell::EffectLearnWarbandScene,                        //341 SPELL_EFFECT_LEARN_WARBAND_SCENE
@@ -577,7 +577,7 @@ void Spell::EffectDummy()
     // normal DB scripted effect
     TC_LOG_DEBUG("spells", "Spell ScriptStart spellid {} in EffectDummy({})", m_spellInfo->Id, effectInfo->EffectIndex);
     m_caster->GetMap()->ScriptsStart(sSpellScripts, uint32(m_spellInfo->Id | (effectInfo->EffectIndex << 24)), m_caster, unitTarget);
-
+	
 #ifdef ELUNA
     if (Eluna* e = m_caster->GetEluna())
     {
@@ -1676,7 +1676,7 @@ void Spell::EffectOpenLock()
         // these objects must have been spawned by outdoorpvp!
         else if (gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_GOOBER && sOutdoorPvPMgr->HandleOpenGo(player, gameObjTarget))
             return;
-        else if (player && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST)
+		else if (player && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST)
             if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(goInfo->chest.conditionID1))
                 if (!sConditionMgr->IsPlayerMeetingCondition(player, playerCondition))
                     return;
@@ -2091,7 +2091,7 @@ void Spell::EffectSummonType()
     {
         summon->SetCreatorGUID(caster->GetGUID());
         ExecuteLogEffectSummonObject(SpellEffectName(effectInfo->Effect), summon);
-        CallScriptOnSummonHandlers(summon);
+		CallScriptOnSummonHandlers(summon);
     }
 }
 
@@ -2820,8 +2820,12 @@ void Spell::EffectWeaponDmg()
     // multiple weapon dmg effect workaround
     // execute only the last weapon damage
     // and handle all effects at once
+    uint32 effectMask = std::ranges::find(m_UniqueTargetInfo, unitTarget->GetGUID(), &TargetInfo::TargetGUID)->EffectMask;
     for (size_t j = effectInfo->EffectIndex + 1; j < m_spellInfo->GetEffects().size(); ++j)
     {
+        if (!(effectMask & (1 << j)))
+            continue;
+
         switch (m_spellInfo->GetEffect(SpellEffIndex(j)).Effect)
         {
             case SPELL_EFFECT_WEAPON_DAMAGE:
@@ -2855,6 +2859,9 @@ void Spell::EffectWeaponDmg()
     float weaponDamagePercentMod = 1.0f;
     for (SpellEffectInfo const& spellEffectInfo : m_spellInfo->GetEffects())
     {
+        if (!(effectMask & (1 << spellEffectInfo.EffectIndex)))
+            continue;
+
         switch (spellEffectInfo.Effect)
         {
             case SPELL_EFFECT_WEAPON_DAMAGE:
@@ -2900,6 +2907,9 @@ void Spell::EffectWeaponDmg()
     // Sequence is important
     for (SpellEffectInfo const& spellEffectInfo : m_spellInfo->GetEffects())
     {
+        if (!(effectMask & (1 << spellEffectInfo.EffectIndex)))
+            continue;
+
         // We assume that a spell have at most one fixed_bonus
         // and at most one weaponDamagePercentMod
         switch (spellEffectInfo.Effect)
@@ -3067,7 +3077,7 @@ void Spell::EffectScriptEffect()
         {
             switch (m_spellInfo->Id)
             {
-                case 83958: ///< Mobile Banking
+				case 83958: ///< Mobile Banking
                 {
                     m_caster->CastSpell(m_caster, 88304, true);
                     break;
@@ -3098,7 +3108,7 @@ void Spell::EffectScriptEffect()
                     m_caster->CastSpell(unitTarget, 22682, this);
                     return;
                 }
-                case 29830: // Mirren's Drinking Hat
+				case 29830: // Mirren's Drinking Hat
                 {
                     uint32 item = 0;
                     switch (urand(1, 6))
@@ -4108,26 +4118,21 @@ void Spell::EffectQuestClear()
     if (oldStatus == QUEST_STATUS_NONE)
         return;
 
+    player->RemoveActiveQuest(quest_id, false);
+
     // remove all quest entries for 'entry' from quest log
-    for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
+    if (oldStatus != QUEST_STATUS_REWARDED)
     {
-        uint32 logQuest = player->GetQuestSlotQuestId(slot);
-        if (logQuest == quest_id)
+        // we ignore unequippable quest items in this case, it's still be equipped
+        player->TakeQuestSourceItem(quest_id, false);
+
+        if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
         {
-            player->SetQuestSlot(slot, 0);
-
-            // we ignore unequippable quest items in this case, it's still be equipped
-            player->TakeQuestSourceItem(logQuest, false);
-
-            if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
-            {
-                player->pvpInfo.IsHostile = player->pvpInfo.IsInHostileArea || player->HasPvPForcingQuest();
-                player->UpdatePvPState();
-            }
+            player->pvpInfo.IsHostile = player->pvpInfo.IsInHostileArea || player->HasPvPForcingQuest();
+            player->UpdatePvPState();
         }
     }
 
-    player->RemoveActiveQuest(quest_id, false);
     player->RemoveRewardedQuest(quest_id);
     player->DespawnPersonalSummonsForQuest(quest_id);
 
@@ -4284,7 +4289,7 @@ void Spell::EffectResurrectPet()
     if (!player->GetPet())
     {
         PetStable const* petStable = player->GetPetStable();
-        auto deadPetItr = std::find_if(petStable->ActivePets.begin(), petStable->ActivePets.end(), [](Optional<PetStable::PetInfo> const& petInfo)
+        auto deadPetItr = std::ranges::find_if(petStable->ActivePets, [](Optional<PetStable::PetInfo> const& petInfo)
         {
             return petInfo && !petInfo->Health;
         });
@@ -5514,16 +5519,13 @@ void Spell::EffectCancelConversation()
     if (!unitTarget)
         return;
 
-    std::vector<WorldObject*> objs;
-    Trinity::ObjectEntryAndPrivateOwnerIfExistsCheck check(unitTarget->GetGUID(), effectInfo->MiscValue);
-    Trinity::WorldObjectListSearcher<Trinity::ObjectEntryAndPrivateOwnerIfExistsCheck> checker(unitTarget, objs, check, GRID_MAP_TYPE_MASK_CONVERSATION);
-    Cell::VisitGridObjects(unitTarget, checker, 100.0f);
-
-    for (WorldObject* obj : objs)
+    auto work = [check = Trinity::ObjectEntryAndPrivateOwnerIfExistsCheck(unitTarget->GetGUID(), effectInfo->MiscValue)](Conversation* conversation)
     {
-        if (Conversation* convo = obj->ToConversation())
-            convo->Remove();
-    }
+        if (check(conversation))
+            conversation->Remove();
+    };
+    Trinity::ConversationWorker worker(unitTarget, work);
+    Cell::VisitGridObjects(unitTarget, worker, 100.0f);
 }
 
 void Spell::EffectAddGarrisonFollower()
@@ -6286,6 +6288,54 @@ void Spell::EffectLearnWarbandScene()
         return;
 
     target->GetSession()->GetCollectionMgr()->AddWarbandScene(effectInfo->MiscValue);
+}
+
+void Spell::EffectSetPlayerDataElementAccount()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* target = Object::ToPlayer(unitTarget);
+    if (!target)
+        return;
+
+    target->SetDataElementAccount(effectInfo->MiscValue, int64(damage));
+}
+
+void Spell::EffectSetPlayerDataElementCharacter()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* target = Object::ToPlayer(unitTarget);
+    if (!target)
+        return;
+
+    target->SetDataElementCharacter(effectInfo->MiscValue, int64(damage));
+}
+
+void Spell::EffectSetPlayerDataFlagAccount()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* target = Object::ToPlayer(unitTarget);
+    if (!target)
+        return;
+
+    target->SetDataFlagAccount(effectInfo->MiscValue, damage != 0);
+}
+
+void Spell::EffectSetPlayerDataFlagCharacter()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* target = Object::ToPlayer(unitTarget);
+    if (!target)
+        return;
+
+    target->SetDataFlagCharacter(effectInfo->MiscValue, damage != 0);
 }
 
 //NEW

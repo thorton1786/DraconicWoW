@@ -64,12 +64,12 @@ void WorldSession::HandleTransmogrifyItems(WorldPackets::Transmogrification::Tra
             TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - {}, Name: {} tried to transmogrify using appearance he has not collected ({}).", player->GetGUID().ToString(), player->GetName(), itemModifiedAppearanceId);
             return false;
         }
-        ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(itemModifiedAppearance->ItemID);
-        if (player->CanUseItem(itemTemplate) != EQUIP_ERR_OK)
-        {
-            TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - {}, Name: {} tried to transmogrify using appearance he can never use ({}).", player->GetGUID().ToString(), player->GetName(), itemModifiedAppearanceId);
-            return false;
-        }
+        //ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(itemModifiedAppearance->ItemID);
+        //if (player->CanUseItem(itemTemplate) != EQUIP_ERR_OK)
+        //{
+        //    TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - {}, Name: {} tried to transmogrify using appearance he can never use ({}).", player->GetGUID().ToString(), player->GetName(), itemModifiedAppearanceId);
+        //    return false;
+        //}
 
         // validity of the transmogrification items
         if (!Item::CanTransmogrifyItemWithItem(itemTransmogrified, itemModifiedAppearance))

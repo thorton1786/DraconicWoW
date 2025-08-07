@@ -162,7 +162,7 @@ protected:
 private:
     void SaveNpcOutfitToDb(uint32 templateId, uint8 variationId);
     void SaveCustomNpcDataToDb(CustomNpcData outfitData);
-    void SaveNpcCreatureTemplateToDb(CreatureTemplate cTemplate);
+    void SaveNpcCreatureTemplateToDb(CreatureTemplate& cTemplate);
     void SaveNpcEquipmentInfoToDb(uint32 templateId, uint8 variationId);
     void SaveNpcCreatureTemplateAddonToDb(uint32 templateId, CreatureAddon cAddon);
     void SaveNpcModelInfo(CreatureModel model, uint32 creatureTemplateId, uint8 variationId);

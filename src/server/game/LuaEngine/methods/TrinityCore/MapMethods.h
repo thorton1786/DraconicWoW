@@ -58,7 +58,7 @@ namespace LuaMap
      */
     int IsEmpty(Eluna* E, Map* map)
     {
-        E->Push(map->isEmpty());
+        E->Push(map->empty());
         return 1;
     }
 

@@ -129,7 +129,7 @@ namespace WorldPackets
             int32 CfgRealmRecID                          = 0;
             uint32 CommercePricePollTimeSeconds          = 0;
             int64 RedeemForBalanceAmount                 = 0;
-            uint32 BpayStorePurchaseTimeout              = 0;
+            uint32 BpayStorePurchaseTimeout              = 300;
             uint32 ClubsPresenceDelay                    = 0;
             uint32 ClubPresenceUnsubscribeDelay          = 0; ///< Timer for updating club presence when communities ui frame is hidden
             uint32 KioskSessionDurationMinutes           = 0;
@@ -153,7 +153,7 @@ namespace WorldPackets
             bool CommunitiesEnabled                  = true;
             bool BnetGroupsEnabled                   = true;
             bool CharacterCommunitiesEnabled         = true;
-            bool ClubPresenceAllowSubscribeAll       = false;
+            bool ClubPresenceAllowSubscribeAll       = true;
             bool VoiceChatParentalDisabled           = false;
             bool VoiceChatParentalMuted              = false;
             bool QuestSessionEnabled                 = false;
@@ -179,7 +179,7 @@ namespace WorldPackets
             bool IsAccountCurrencyTransferEnabled    = true;
             bool LobbyMatchmakerQueueFromMainlineEnabled = true;
             bool CanSendLobbyMatchmakerPartyCustomizations = true;
-            bool AddonProfilerEnabled                = false;
+            bool AddonProfilerEnabled                = true;
 
             SocialQueueConfig QuickJoinConfig;
             SquelchInfo Squelch;
@@ -212,13 +212,13 @@ namespace WorldPackets
             bool BpayStoreDisabledByParentalControls = false; // NYI
             bool CharUndeleteEnabled                 = false;
             bool BpayStoreEnabled                    = true;
-            bool CommerceServerEnabled               = true; // NYI
+            bool CommerceServerEnabled               = false; // NYI
             bool VeteranTokenRedeemWillKick          = false; // NYI
             bool WorldTokenRedeemWillKick            = false; // NYI
             bool ExpansionPreorderInStore            = false; // NYI
             bool KioskModeEnabled                    = false; // NYI
             bool CompetitiveModeEnabled              = true; // NYI
-            bool BoostEnabled                        = true; // classic only
+            bool BoostEnabled                        = false; // classic only
             bool TrialBoostEnabled                   = false; // NYI
             bool RedeemForBalanceAvailable           = false; // NYI
             bool PaidCharacterTransfersBetweenBnetAccountsEnabled = false;
@@ -237,13 +237,15 @@ namespace WorldPackets
             bool BNSendWhisperUseV2Services          = true; ///< BNSendWhisper will send to v2.WhisperService instead of v1.NotificationService
             bool BNSendGameDataUseV2Services         = true; ///< BNSendGameData will send to v2.NotificationService instead of v1.NotificationService
             bool CharacterSelectListModeRealmless    = false;
+            bool WowTokenLimitedMode                 = false; // classic only
+            bool PandarenLevelBoostAllowed           = true; // classic only
             Optional<EuropaTicketConfig> EuropaTicketSystemStatus;
             std::vector<int32> LiveRegionCharacterCopySourceRegions;
             uint32 CommercePricePollTimeSeconds      = 0;     // NYI
             int64 RedeemForBalanceAmount             = 0;     // NYI
             int32 MaxCharactersOnThisRealm           = 0;
-            uint32 BpayStorePurchaseTimeout          = 0;     // NYI
-            int32 ActiveBoostType                    = 2;     // NYI
+            uint32 BpayStorePurchaseTimeout          = 300;     // NYI
+            int32 ActiveBoostType                    = 0;     // NYI
             int32 TrialBoostType                     = 0;     // NYI
             int32 MinimumExpansionLevel              = 0;
             int32 MaximumExpansionLevel              = 0;

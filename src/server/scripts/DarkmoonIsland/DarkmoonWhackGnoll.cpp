@@ -186,7 +186,7 @@ class npc_whack_gnoll_bunny : public CreatureScript
                         {
                             if (Creature* barrel = GetRandomBarrel())
                             {
-                                Creature* doll =  barrel->SummonCreature(NPC_DOLL, barrel->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 6s);
+                                barrel->SummonCreature(NPC_DOLL, barrel->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 6s);
                                 barrel->CastSpell(barrel, SPELL_SPAWN_VISUAL, false);
                             }
 

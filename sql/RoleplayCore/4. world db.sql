@@ -356,7 +356,6 @@ REPLACE INTO `spell_script_names` VALUES (157695, 'spell_warl_demonbolt');
 REPLACE INTO `spell_script_names` VALUES (196277, 'spell_warl_implosion');
 REPLACE INTO `spell_script_names` VALUES (603, 'spell_warlock_doom');
 REPLACE INTO `spell_script_names` VALUES (6353, 'spell_warlock_soul_fire');
-REPLACE INTO `spell_script_names` VALUES (196447, 'spell_warl_channel_demonfire');
 REPLACE INTO `spell_script_names` VALUES (215941, 'spell_warl_soul_conduit');
 REPLACE INTO `spell_script_names` VALUES (232670, 'spell_warr_shadowbolt_affliction');
 REPLACE INTO `spell_script_names` VALUES (104318, 'spell_warlock_fel_firebolt_wild_imp');
@@ -403,14 +402,6 @@ REPLACE INTO `spell_script_names` VALUES (845, 'spell_warr_cleave_dmg');
 -- ----------------------------
 -- Mage spell fixes
 -- ----------------------------
-
-REPLACE INTO `spell_script_names` VALUES (153561, 'spell_mage_meteor');
-REPLACE INTO `spell_script_names` VALUES (153564, 'spell_mage_meteor_damage');
-
-REPLACE INTO `areatrigger_scripts` VALUES (8089, 'at_mage_meteor_timer');
-REPLACE INTO `areatrigger_scripts` VALUES (6211, 'at_mage_meteor_burn');
-
-REPLACE INTO `areatrigger_create_properties` VALUES (177345, 1, 8089, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 3000, 4, 8, 8, 4, 4, 0.3, 0.3, 0, 0, 'at_mage_meteor_timer', 27101);
 
 REPLACE INTO `spell_script_names` VALUES (205025, 'spell_mage_presence_of_mind');
 

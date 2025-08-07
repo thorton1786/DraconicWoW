@@ -18,6 +18,7 @@
 #ifndef DatabaseEnvFwd_h__
 #define DatabaseEnvFwd_h__
 
+#include "AsyncCallbackProcessorFwd.h"
 #include <memory>
 
 struct QueryResultFieldMetadata;
@@ -47,9 +48,7 @@ class PreparedResultSet;
 using PreparedQueryResult = std::shared_ptr<PreparedResultSet>;
 
 class QueryCallback;
-
-template<typename T>
-class AsyncCallbackProcessor;
+bool InvokeAsyncCallbackIfReady(QueryCallback& callback);
 
 using QueryCallbackProcessor = AsyncCallbackProcessor<QueryCallback>;
 
@@ -59,6 +58,7 @@ template<typename T>
 class Transaction;
 
 class TransactionCallback;
+bool InvokeAsyncCallbackIfReady(TransactionCallback& callback);
 
 template<typename T>
 using SQLTransaction = std::shared_ptr<Transaction<T>>;
@@ -81,6 +81,7 @@ using WorldDatabaseQueryHolder = SQLQueryHolder<WorldDatabaseConnection>;
 using RoleplayDatabaseQueryHolder = SQLQueryHolder<RoleplayDatabaseConnection>;
 
 class SQLQueryHolderCallback;
+bool InvokeAsyncCallbackIfReady(SQLQueryHolderCallback& callback);
 
 // mysql
 struct MySQLHandle;

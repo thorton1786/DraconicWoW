@@ -73,7 +73,7 @@ class TC_GAME_API SpellScriptBase
 // internal use classes & functions
 // DO NOT OVERRIDE THESE IN SCRIPTS
 public:
-    SpellScriptBase();
+    SpellScriptBase() noexcept;
     virtual ~SpellScriptBase();
 
     SpellScriptBase(SpellScriptBase const& right) = delete;
@@ -88,6 +88,14 @@ public:
 
 protected:
     virtual bool _Validate(SpellInfo const* entry);
+
+    // compile barrier to avoid instantiating operator+= in every script file
+    template <typename T>
+    class HookList : public ::HookList<T>
+    {
+    public:
+        HookList& operator+=(T&& t);
+    };
 
     class TC_GAME_API EffectHook
     {
@@ -904,7 +912,7 @@ public:
      // left for custom compatibility only, DO NOT USE
     #define PrepareSpellScript(CLASSNAME)
 
-    SpellScript();
+    SpellScript() noexcept;
     ~SpellScript();
     bool _Validate(SpellInfo const* entry) override;
     bool _Load(Spell* spell);
@@ -1124,7 +1132,7 @@ public:
     bool IsHitCrit() const;
     Spell* GetSpell() const { return m_spell; }
     // returns current spell hit target aura
-    Aura* GetHitAura(bool dynObjAura = false) const;
+    Aura* GetHitAura(bool dynObjAura = false, bool withRemoved = false) const;
     // prevents applying aura on current spell hit target
     void PreventHitAura();
 
@@ -2196,7 +2204,7 @@ public:
     #define PrepareAuraScript(CLASSNAME)
 
 public:
-    AuraScript();
+    AuraScript() noexcept;
     ~AuraScript();
     bool _Validate(SpellInfo const* entry) override;
     bool _Load(Aura* aura);

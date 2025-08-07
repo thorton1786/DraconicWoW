@@ -410,10 +410,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
 
         if (HasDriveStatus)
         {
-            data->WriteBit(unit->m_movementInfo.driveStatus->accelerating);
-            data->WriteBit(unit->m_movementInfo.driveStatus->drifting);
             *data << float(unit->m_movementInfo.driveStatus->speed);
             *data << float(unit->m_movementInfo.driveStatus->movementAngle);
+            data->WriteBit(unit->m_movementInfo.driveStatus->accelerating);
+            data->WriteBit(unit->m_movementInfo.driveStatus->drifting);
+            data->FlushBits();
         }
 
         *data << float(unit->GetSpeed(MOVE_WALK));
@@ -471,10 +472,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
     if (flags.Stationary)
     {
         WorldObject const* self = static_cast<WorldObject const*>(this);
-        *data << float(self->GetStationaryX());
-        *data << float(self->GetStationaryY());
-        *data << float(self->GetStationaryZ());
-        *data << float(self->GetStationaryO());
+        *data << self->GetStationaryPosition().PositionXYZOStream();
     }
 
     if (flags.CombatVictim)
@@ -512,7 +510,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
 
     if (flags.AreaTrigger)
     {
-        AreaTrigger const* areaTrigger = ToAreaTrigger();
+        AreaTrigger const* areaTrigger = static_cast<AreaTrigger const*>(this);
         AreaTriggerCreateProperties const* createProperties = areaTrigger->GetCreateProperties();
         AreaTriggerShapeInfo const& shape = areaTrigger->GetShape();
 
@@ -592,8 +590,6 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         bool hasMorphCurveID        = createProperties && createProperties->MorphCurveId != 0;
         bool hasFacingCurveID       = createProperties && createProperties->FacingCurveId != 0;
         bool hasMoveCurveID         = createProperties && createProperties->MoveCurveId != 0;
-        bool hasAreaTriggerSpline   = areaTrigger->HasSplines();
-        bool hasOrbit               = areaTrigger->HasOrbit();
         bool hasMovementScript      = false;
         bool hasPositionalSoundKitID= false;
 
@@ -610,19 +606,14 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         data->WriteBit(hasFacingCurveID);
         data->WriteBit(hasMoveCurveID);
         data->WriteBit(hasPositionalSoundKitID);
-        data->WriteBit(hasAreaTriggerSpline);
-        data->WriteBit(hasOrbit);
+        data->WriteBit(areaTrigger->HasSplines());
+        data->WriteBit(areaTrigger->HasOrbit());
         data->WriteBit(hasMovementScript);
 
         data->FlushBits();
 
-        if (hasAreaTriggerSpline)
-        {
-            *data << uint32(areaTrigger->GetTimeToTarget());
-            *data << uint32(areaTrigger->GetElapsedTimeForMovement());
-
-            WorldPackets::Movement::CommonMovement::WriteCreateObjectAreaTriggerSpline(areaTrigger->GetSpline(), *data);
-        }
+        if (areaTrigger->HasSplines())
+            WorldPackets::AreaTrigger::WriteAreaTriggerSpline(*data, areaTrigger->GetTimeToTarget(), areaTrigger->GetElapsedTimeForMovement(), areaTrigger->GetSpline());
 
         if (hasTargetRollPitchYaw)
             *data << areaTrigger->GetTargetRollPitchYaw().PositionXYZStream();
@@ -645,7 +636,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         //if (hasMovementScript)
         //    *data << *areaTrigger->GetMovementScript(); // AreaTriggerMovementScriptInfo
 
-        if (hasOrbit)
+        if (areaTrigger->HasOrbit())
         {
             using WorldPackets::AreaTrigger::operator<<;
             *data << areaTrigger->GetOrbit();
@@ -3508,8 +3499,8 @@ void WorldObject::GetCreatureListWithOptionsInGrid(Container& creatureContainer,
 template <typename Container>
 void WorldObject::GetPlayerListInGrid(Container& playerContainer, float maxSearchRange, bool alive /*= true*/) const
 {
-    Trinity::AnyPlayerInObjectRangeCheck checker(this, maxSearchRange, alive);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, playerContainer, checker);
+    Trinity::AnyUnitInObjectRangeCheck checker(this, maxSearchRange, true, alive);
+    Trinity::PlayerListSearcher searcher(this, playerContainer, checker);
     Cell::VisitWorldObjects(this, searcher, maxSearchRange);
 }
 
@@ -3802,26 +3793,23 @@ void WorldObject::DestroyForNearbyPlayers()
     if (!IsInWorld())
         return;
 
-    std::list<Player*> targets;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange(), false);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
-    Cell::VisitWorldObjects(this, searcher, GetVisibilityRange());
-    for (std::list<Player*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+    auto destroyer = [this](Player* player)
     {
-        Player* player = (*iter);
-
         if (player == this)
-            continue;
+            return;
 
         if (!player->HaveAtClient(this))
-            continue;
+            return;
 
         if (Unit const* unit = ToUnit(); unit && unit->GetCharmerGUID() == player->GetGUID()) /// @todo this is for puppet
-            continue;
+            return;
 
         DestroyForPlayer(player);
         player->m_clientGUIDs.erase(GetGUID());
-    }
+    };
+
+    Trinity::PlayerDistWorker worker(this, GetVisibilityRange(), destroyer);
+    Cell::VisitWorldObjects(this, worker, GetVisibilityRange());
 }
 
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)
@@ -4062,8 +4050,8 @@ std::list<AreaTrigger*> WorldObject::SelectNearestAreaTriggers(uint32 spellId, f
 std::list<Player*> WorldObject::SelectNearestPlayers(float range, bool alive)
 {
     std::list<Player*> PlayerList;
-    Trinity::AnyPlayerInObjectRangeCheck checker(this, range, alive);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, PlayerList, checker);
+    Trinity::AnyUnitInObjectRangeCheck checker(this, range, alive);
+    Trinity::PlayerListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, PlayerList, checker);
     Cell::VisitGridObjects(this, searcher, range);
     return PlayerList;
 }
@@ -4095,8 +4083,8 @@ void WorldObject::GetCreatureListInGrid(Container& creatureList, float maxSearch
 Player* WorldObject::FindNearestPlayer(float range, bool /*alive*/)
 {
     Player* player = nullptr;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange());
-    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
+    Trinity::AnyUnitInObjectRangeCheck check(this, GetVisibilityRange());
+    Trinity::PlayerSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, player, check);
     Cell::VisitGridObjects(this, searcher, range);
     return player;
 }
